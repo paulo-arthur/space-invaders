@@ -123,5 +123,3 @@ while 1:
         if bullet['y'] > HEIGHT + 10:
             del enemy_ammo[enemy_ammo.index(bullet)]
     pygame.display.update()
-
-input()
