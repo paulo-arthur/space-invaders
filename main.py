@@ -12,12 +12,14 @@ HEIGHT = 600
 BLACK = 50, 40, 70
 WHITE = 220, 220, 220
 
+ENEMYS_TIME = 4
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 spaceship = spaceships(WIDTH, HEIGHT)
 
 ammo = []
-enemies = {'number': 5, 'wave_time': 5, 'enemies': []}
+enemies = {'number': 5, 'bullet_speed': 1, 'enemies': []}
 enemy_ammo = []
 
 while 1:
@@ -65,6 +67,9 @@ while 1:
     if len(enemies['enemies']) == 0:
         for _ in range(0, enemies['number']):
             enemies['enemies'].append(get_enemy(WIDTH, HEIGHT, enemies['number']))
+        enemies['number'] += 1
+        enemies['bullet_speed'] += 0.005
+
 
     for enemy in enemies['enemies']:
         enemy_rect = pygame.Rect(enemy['x'],
@@ -80,11 +85,12 @@ while 1:
             enemy['speed'] *= -0.1 * random.randint(8, 12)
 
         #enemy's_shot
-        if time() - enemy['last_shot'] >= 4:
+        if time() - enemy['last_shot'] >= ENEMYS_TIME:
             enemy_bullet = get_ammo(enemy['x'], enemy['y'], None)
             enemy_bullet['speed'] *= 0.5
             enemy_ammo.append(enemy_bullet)
             enemy['last_shot'] = time()
+            ENEMYS_TIME -= enemy['recoil'] if ENEMYS_TIME >= 1 else 0
 
         #enemy's death
         bullet_list = []
@@ -103,15 +109,19 @@ while 1:
         pygame.draw.rect(screen, WHITE, pygame.Rect(
             bullet['x'], bullet['y'], bullet['size'], bullet['size']
         ))
-        bullet['y'] += bullet['speed']
+        bullet['y'] += enemies['bullet_speed']
 
+        #spaceship death
         spaceship_death = pygame.Rect(bullet['x'], bullet['y'], bullet['size'], bullet['size']).collidelist([pygame.Rect(spaceship['x'],
                                                     spaceship['y'],
                                                     spaceship['size'][0],
                                                     spaceship['size'][1])])
-
         if spaceship_death != -1:
-            break
+            sys.exit()
+
+        #enemies bullets clean
+        if bullet['y'] > HEIGHT + 10:
+            del enemy_ammo[enemy_ammo.index(bullet)]
     pygame.display.update()
 
 input()
